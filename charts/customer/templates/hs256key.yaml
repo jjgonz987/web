@@ -1,0 +1,13 @@
+apiVersion: v1
+data:
+  key: {{ .Values.global.hs256key.secret | b64enc | quote }}
+kind: Secret
+metadata:
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    app: bluecompute
+    tier: backend
+    micro: customer
+  name: "{{ .Release.Name }}-{{ .Values.hs256key.secretName }}"
+  namespace: {{ .Release.Namespace }}
+type: Opaque

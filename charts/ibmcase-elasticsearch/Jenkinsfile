@@ -1,0 +1,37 @@
+podTemplate(label: 'mypod',
+    volumes: [
+        hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
+        secretVolume(secretName: 'icpadmin', mountPath: '/var/run/secrets/registry-account'),
+        configMapVolume(configMapName: 'icpconfig', mountPath: '/var/run/configs/registry-config')
+    ],
+    containers: [
+        containerTemplate(name: 'kubectl', image: 'ibmcloudacademy/k8s-icp:v1.0', ttyEnabled: true, command: 'cat'),
+  ]) {
+
+    node('mypod') {
+        checkout scm
+        container('kubectl') {
+            stage('Deploy new Docker Image') {
+                sh """
+                #!/bin/bash
+                set +e
+                NAMESPACE=`cat /var/run/configs/registry-config/namespace`
+                REGISTRY=`cat /var/run/configs/registry-config/registry`
+		DOCKER_USER=`cat /var/run/secrets/registry-account/username`
+		DOCKER_PASSWORD=`cat /var/run/secrets/registry-account/password`
+
+
+                curl -kLo cloudctl https://10.10.1.10:8443/api/cli/cloudctl-linux-amd64
+                curl -kLo helm.tgz https://10.10.1.10:8443/api/cli/helm-linux-amd64.tar.gz
+                tar -xzf helm.tgz
+
+                chmod a+x cloudctl
+                ./cloudctl login -a https://10.10.1.10:8443 -u \${DOCKER_USER} -p \${DOCKER_PASSWORD} -n default
+
+		cd charts
+                ../linux-amd64/helm install --tls -n bluecompute-elasticsearch ibmcase-elasticsearch
+                """
+            }
+        }
+    }
+}

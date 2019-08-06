@@ -1,0 +1,43 @@
+# Default values for micro-customer.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+replicaCount: 1
+
+global:
+  hs256key:
+    secret: E6526VJkKYhyTFRFMC0pTECpHcZ7TGcq8pKsVVgz9KtESVpheEO284qKzfzg8HpWNBPeHOxNGlyudUHi6i8tFQJXC8PiI48RUpMh23vPDLGD35pCM0417gf58z5xlmRNii56fwRCmIhhV7hDsm3KO2jRv4EBVz7HrYbzFeqI45CaStkMYNipzSm2duuer7zRdMjEKIdqsby0JfpQpykHmC5L6hxkX0BT7XWqztTr6xHCwqst26O0g8r7bXSYjp4a
+    secretName: bluecompute-hs256key
+image:
+  repository: ibmcase/bluecompute-customer
+  tag: latest
+  pullPolicy: Always
+  pullSecret: icpregistry
+
+service:
+  name: customer
+  type: ClusterIP
+  externalPort: 8080
+  internalPort: 8080
+
+tags:
+  bluemix: false
+  localdb: false
+
+hs256key:
+  secret: E6526VJkKYhyTFRFMC0pTECpHcZ7TGcq8pKsVVgz9KtESVpheEO284qKzfzg8HpWNBPeHOxNGlyudUHi6i8tFQJXC8PiI48RUpMh23vPDLGD35pCM0417gf58z5xlmRNii56fwRCmIhhV7hDsm3KO2jRv4EBVz7HrYbzFeqI45CaStkMYNipzSm2duuer7zRdMjEKIdqsby0JfpQpykHmC5L6hxkX0BT7XWqztTr6xHCwqst26O0g8r7bXSYjp4a
+  secretName: bluecompute-hs256key
+  skipDelete: true
+
+resources:
+  limits:
+    memory: 128Mi
+  requests:
+    memory: 64Mi
+
+dataloader:
+  image:
+    repository: ibmcase/bluecompute-dataloader
+    tag: latest
+couchdb:
+  binding:
+    name: binding-customer-couchdb

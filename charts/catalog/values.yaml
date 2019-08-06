@@ -1,0 +1,32 @@
+replicaCount: 1
+
+image:
+  repository: ibmcase/bluecompute-catalog
+  pullPolicy: Always
+  tag: latest
+  pullSecret: icpregistry
+
+service:
+  name: catalog
+  type: ClusterIP
+  externalPort: 8081
+  internalPort: 8081
+
+inventory:
+  service:
+    url: http://bluecompute-inventory-inventory:8080
+
+dataloader:
+  image:
+    repository: ibmcase/bluecompute-dataloader
+    tag: latest
+
+elasticsearch:
+  binding:
+    name: binding-catalog-elasticsearch
+
+resources:
+  limits:
+    memory: 256Mi
+  requests:
+    memory: 64Mi

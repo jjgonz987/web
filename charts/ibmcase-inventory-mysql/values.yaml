@@ -1,0 +1,50 @@
+global:
+  persistence:
+    enabled: false
+    volume:
+      storageClass:
+      size:
+
+image:
+  repository: ibmcase/mysql
+  tag: latest
+  pullPolicy: IfNotPresent
+
+dbname: inventorydb
+user: dbuser
+password: password
+rootPassword: admin123
+
+server_id: 1
+max_servers: 4
+
+binding:
+  name: binding-inventorydb-mysql
+
+persistence:
+  enabled: false
+  accessMode: ReadWriteOnce
+  size: 8Gi
+  storageClass:
+
+resources:
+  requests:
+    memory: 256Mi
+    cpu: 100m
+
+service:
+  name: inventory-mysql
+  type: ClusterIP
+  externalPort: 3306
+  internalPort: 3306
+
+dataloader:
+  image:
+    repository: ibmcloudacademy/mysql-loader
+    tag: v1
+
+busybox:
+  image:
+    repository: ibmcase/bluecompute-busybox
+    tag: latest
+    pullPolicy: IfNotPresent

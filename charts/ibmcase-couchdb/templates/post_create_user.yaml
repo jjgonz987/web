@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ cat .Release.Name "-" .Chart.Name "-create-user-" (randAlphaNum 5 | lower) | nospace | trunc 63 }}
+  labels:
+    app: bluecompute
+    heritage: {{.Release.Service | quote }}
+    release: {{.Release.Name | quote }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  template:
+    metadata:
+      name: {{ cat .Release.Name "-" .Chart.Name "-create-user-" (randAlphaNum 5 | lower) | nospace }}
+      labels:
+        app: bluecompute
+        heritage: {{.Release.Service | quote }}
+        release: {{.Release.Name | quote }}
+        chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+      annotations:
+        pod.beta.kubernetes.io/init-containers: '[
+          {
+             "name": "bluecompute-customer-wait-for-customer-service",
+             "image": "{{ .Values.bash.image.repository }}:{{ .Values.bash.image.tag }}",
+             "imagePullPolicy": "IfNotPresent",
+             "command": ["/bin/bash", "-c", "until curl --max-time 1 http://{{ .Release.Name }}-{{ .Values.service.name }}:{{ .Values.service.externalPort }}; do echo waiting for customer-service; sleep 10; done;sleep 60;"]
+          }
+        ]'
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: create-user
+        image: {{ .Values.bash.image.repository }}:{{ .Values.bash.image.tag }}
+        command: ["/bin/bash", "-c" ]
+        args:
+        - >
+                sleep 20;
+                curl -X PUT http://admin:passw0rd@{{ .Release.Name }}-{{ .Values.service.name }}:{{ .Values.service.externalPort }}/customers;
+                curl -k -X POST -H "Content-Type: application/json" \
+                        -d '{"username": "foo", "password": "bar", "firstName": "foo", "lastName": "bar", "email": "foo@bar.com"}' \
+                        http://admin:passw0rd@{{ .Release.Name }}-{{ .Values.service.name }}:{{ .Values.service.externalPort }}/customers;
+        imagePullPolicy: IfNotPresent
